@@ -9,6 +9,7 @@ usage = do
 handle :: [[Char]] -> IO ()
 handle args = case args !! 0 of
                 "sass" -> putStrLn "Sass compiler"
+                other  -> usage
 
 main :: IO ()
 main = do
