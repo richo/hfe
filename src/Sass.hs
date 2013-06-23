@@ -49,11 +49,9 @@ directive = do
 data SassVal = Directive { key :: String, rules :: [String] }
              | Rule { selectors :: [SassVal], directives :: [SassVal] }
              | Selector String
-             | FakeDirective { content :: String }
 instance Show SassVal where show = showVal
 
 showVal :: SassVal -> String
-showVal (FakeDirective {content = c})          = "FakeDirective: " ++ c
 showVal (Selector str)                         =  str
 showVal (Directive {key = k, rules = r})       = k ++ ":" ++ show r
 showVal (Rule {selectors = s, directives = d}) = show s ++ "{\n " ++ show d ++ "\n}"
