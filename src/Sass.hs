@@ -55,15 +55,21 @@ parseVariable = do
 parseValue :: Parser SassVal
 -- TODO this should parse arrays, strings and literals.
 parseValue = do
-             value <- many letter
+             value <- try parseString <|> parseArray
              char ';'
-             return $ String value
+             return value
 
 parseString :: Parser SassVal
 parseString = do char '"' -- Read until we find this char
                  x <- many (noneOf "\"")
                  char '"'
                  return $ String x
+
+parseArray :: Parser SassVal
+parseArray = do char '('
+                x <- sepBy identifier comma
+                char ')'
+                return $ Array (map String x)
 
 parseImport :: Parser SassVal
 parseImport = do -- Oh lawdy FIXME
@@ -105,6 +111,7 @@ data SassVal = Directive { key :: String, rules :: [String] }
              | StmImport SassVal
              | StmInclude { funcName :: String, args :: [SassVal] }
              | String String
+             | Array [SassVal]
              | Variable { name :: String, value :: SassVal }
 instance Show SassVal where show = showVal
 
@@ -115,6 +122,7 @@ showVal (Rule {selectors = s, directives = d}) = show s ++ "{\n " ++ show d ++ "
 showVal (StmImport path)                       = "Import => " ++ show path
 showVal (StmInclude {funcName = f, args = a})  = "Include => " ++ f ++ "(" ++ show a ++ ")"
 showVal (String str)                           = "\"" ++ str ++ "\""
+showVal (Array arr)                           = "(" ++ show arr ++ ")"
 showVal (Variable {name=n, value=v})           = "$" ++ n ++ " => " ++ show v
 
 
