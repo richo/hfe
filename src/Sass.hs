@@ -35,11 +35,11 @@ directive :: Parser SassVal
 --                 actns <- endBy (noneOf ";") semicolon
 --                 return $ Directive name actns
 
-parseString :: Parser String
+parseString :: Parser SassVal
 parseString = do char '"' -- Read until we find this char
                  x <- many (noneOf "\"")
                  char '"'
-                 return x
+                 return $ String x
 
 parseImport :: Parser SassVal
 parseImport = do -- Oh lawdy FIXME
@@ -68,14 +68,16 @@ directive = do
 data SassVal = Directive { key :: String, rules :: [String] }
              | Rule { selectors :: [SassVal], directives :: [SassVal] }
              | Selector String
-             | StmImport String
+             | StmImport SassVal
+             | String String
 instance Show SassVal where show = showVal
 
 showVal :: SassVal -> String
 showVal (Selector str)                         =  str
 showVal (Directive {key = k, rules = r})       = k ++ ":" ++ show r
 showVal (Rule {selectors = s, directives = d}) = show s ++ "{\n " ++ show d ++ "\n}"
-showVal (StmImport path)                       = "Import => " ++ path
+showVal (StmImport path)                       = "Import => " ++ show path
+showVal (String str)                           = "\"" ++ str ++ "\""
 
 type Env = IORef [(String, IORef SassVal)]
 
