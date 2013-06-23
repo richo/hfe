@@ -54,9 +54,9 @@ instance Show SassVal where show = showVal
 
 showVal :: SassVal -> String
 showVal (FakeDirective {content = c})          = "FakeDirective: " ++ c
-showVal (Selector str)                         = "Selector: " ++ str
-showVal (Directive {key = k, rules = r})       = "Directive: " ++ k ++ " => " ++ show r
-showVal (Rule {selectors = s, directives = d}) = "Rule: " ++ show s ++ " => " ++ show d
+showVal (Selector str)                         =  str
+showVal (Directive {key = k, rules = r})       = k ++ ":" ++ show r
+showVal (Rule {selectors = s, directives = d}) = show s ++ "{\n " ++ show d ++ "\n}"
 
 type Env = IORef [(String, IORef SassVal)]
 
@@ -75,7 +75,7 @@ parseCSSRule = do  selectors <- sepBy selector spaces
 readSassExpr :: String -> String
 readSassExpr input = case parse parseExpr "sass" input of
     Left err -> "No match: " ++ show err
-    Right val -> "Matched: " ++ show val
+    Right val -> show val
 
 readAndEval :: [String] -> IO ()
 readAndEval val@[_] = putStrLn $ (readSassExpr $ val !! 0)
