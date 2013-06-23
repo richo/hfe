@@ -7,7 +7,7 @@ import qualified Sass
 usage :: IO ()
 usage = do
     putStrLn "Usage: hfe <action> [arguments], for action:"
-    putStrLn "           sass filename"
+    Sass.usage
 
 handle :: [[Char]] -> IO ()
 handle args = case args !! 0 of

@@ -29,10 +29,6 @@ directive = do
                 char ';'
                 return $ Directive name actns
 
--- -- | Parse the specified file and return either failure or the program.
--- loadFile :: FilePath -> IO (Either String Stm)
--- loadFile path = parseString "Failed to parse file; " <$> readFile path
-
 -- -- | Parse stdin and return either failure or the program.
 -- loadStdin :: IO (Either String Stm)
 -- loadStdin = parseString "Failed to parse stdin; " <$> getContents
@@ -70,5 +66,19 @@ parseCSSRule = do  selectors <- sepBy selector spaces
                    char '}'
                    return $ Rule selectors directives
 
+readSassExpr :: String -> String
+readSassExpr input = case parse parseExpr "sass" input of
+    Left err -> "No match: " ++ show err
+    Right val -> "Found val"
+
+readAndEval :: [String] -> IO ()
+readAndEval val@[_] = putStrLn $ (readSassExpr $ val !! 0)
+readAndEval other   = usage
+
 sassMain :: [String] -> IO ()
-sassMain args = putStrLn $ args !! 0
+sassMain args = case args !! 0 of
+    "eval" -> readAndEval (drop 1 args)
+    other  -> usage
+
+usage :: IO ()
+usage = putStrLn "           sass eval 'expression'"
