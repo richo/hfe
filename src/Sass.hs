@@ -20,6 +20,9 @@ colon = oneOf ":"
 semicolon :: Parser Char
 semicolon = oneOf ";"
 
+comma :: Parser Char
+comma = oneOf ","
+
 selector :: Parser SassVal
 selector = do first <- letter <|> selectorMeta
               rest  <- many (letter <|> digit <|> hyphen)
@@ -54,6 +57,27 @@ parseImport = do -- Oh lawdy FIXME
                 path <- parseString
                 return $ StmImport path
 
+funcArgs :: Parser SassVal
+funcArgs = parseString
+
+parseInclude :: Parser SassVal
+parseInclude = do -- Oh lawdy FIXME
+                char '@'
+                char 'i'
+                char 'n'
+                char 'c'
+                char 'l'
+                char 'u'
+                char 'd'
+                char 'e'
+                spaces
+                funcName <- many letter
+                spaces
+                char '('
+                args <- sepBy funcArgs comma
+                char ')'
+                return $ StmInclude funcName args
+
 directiveAction :: Parser String
 directiveAction = do
                 action <- many letter
@@ -69,6 +93,7 @@ data SassVal = Directive { key :: String, rules :: [String] }
              | Rule { selectors :: [SassVal], directives :: [SassVal] }
              | Selector String
              | StmImport SassVal
+             | StmInclude { funcName :: String, args :: [SassVal] }
              | String String
 instance Show SassVal where show = showVal
 
@@ -84,6 +109,7 @@ type Env = IORef [(String, IORef SassVal)]
 parseExpr :: Parser SassVal
 parseExpr = parseCSSRule
         <|> parseImport
+        <|> parseInclude
         --
 
 parseCSSRule :: Parser SassVal
