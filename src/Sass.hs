@@ -136,7 +136,7 @@ showVal (Rule {selectors = s, directives = d}) = show s ++ "{\n " ++ show d ++ "
 showVal (StmImport path)                       = "Import => " ++ show path
 showVal (StmInclude {funcName = f, args = a})  = "Include => " ++ f ++ "(" ++ show a ++ ")"
 showVal (String str)                           = "\"" ++ str ++ "\""
-showVal (Array arr)                           = "(" ++ show arr ++ ")"
+showVal (Array arr)                            = "(" ++ show arr ++ ")"
 showVal (Scalar {magnitude=m, unit=u})         = show m ++ u
 showVal (Variable {name=n, value=v})           = "$" ++ n ++ " => " ++ show v
 
