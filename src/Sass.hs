@@ -23,6 +23,12 @@ semicolon = oneOf ";"
 comma :: Parser Char
 comma = oneOf ","
 
+identifier :: Parser String
+identifier = do
+             first <- letter
+             rest  <- many (letter <|> digit <|> hyphen)
+             return $ first:rest
+
 selector :: Parser SassVal
 selector = do first <- letter <|> selectorMeta
               rest  <- many (letter <|> digit <|> hyphen)
@@ -32,7 +38,7 @@ selector = do first <- letter <|> selectorMeta
 parseKeyword :: Parser SassVal
 parseKeyword = do
                 char '@'
-                keyword <- many letter
+                keyword <- identifier
                 case keyword of
                     "import"    -> parseImport
                     "include"   -> parseInclude
@@ -40,7 +46,7 @@ parseKeyword = do
 parseVariable :: Parser SassVal
 parseVariable = do
                 char '$'
-                name <- many letter
+                name <- identifier
                 char ':'
                 spaces
                 value <- parseValue
@@ -71,7 +77,7 @@ funcArgs = parseString
 parseInclude :: Parser SassVal
 parseInclude = do -- Oh lawdy FIXME
                 spaces
-                funcName <- many letter
+                funcName <- identifier
                 char '('
                 args <- sepBy funcArgs comma
                 char ')'
@@ -79,11 +85,15 @@ parseInclude = do -- Oh lawdy FIXME
 
 directiveAction :: Parser String
 directiveAction = do
+                -- TODO Deal with
+                -- auto 420px;
+                -- "value";
+                -- 123
                 action <- many letter
                 return action
 
 directive = do
-                name <- many letter
+                name <- identifier
                 char ':'
                 actions <- sepBy directiveAction spaces
                 return $ Directive name actions
