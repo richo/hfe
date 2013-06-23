@@ -103,13 +103,14 @@ parseInclude = do -- Oh lawdy FIXME
                 char ')'
                 return $ StmInclude funcName args
 
-directiveAction :: Parser String
+parseIdentifier :: Parser SassVal
+parseIdentifier = do
+                    id <- identifier
+                    return $ String id
+
+directiveAction :: Parser SassVal
 directiveAction = do
-                -- TODO Deal with
-                -- auto 420px;
-                -- "value";
-                -- 123
-                action <- many letter
+                action <- try parseScalar <|> parseIdentifier
                 return action
 
 directive = do
@@ -118,7 +119,8 @@ directive = do
                 actions <- sepBy directiveAction spaces
                 return $ Directive name actions
 
-data SassVal = Directive { key :: String, rules :: [String] }
+
+data SassVal = Directive { key :: String, rules :: [SassVal] }
              | Rule { selectors :: [SassVal], directives :: [SassVal] }
              | Selector String
              | Keyword String
