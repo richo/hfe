@@ -29,6 +29,14 @@ selector = do first <- letter <|> selectorMeta
               let name = first : rest
               return $ Selector name
 
+parseKeyword :: Parser SassVal
+parseKeyword = do
+                char '@'
+                keyword <- many letter
+                case keyword of
+                    "import"    -> parseImport
+                    "include"   -> parseInclude
+
 directive :: Parser SassVal
 -- directive = do
 --                 name <- many (noneOf " :")
@@ -46,13 +54,6 @@ parseString = do char '"' -- Read until we find this char
 
 parseImport :: Parser SassVal
 parseImport = do -- Oh lawdy FIXME
-                char '@'
-                char 'i'
-                char 'm'
-                char 'p'
-                char 'o'
-                char 'r'
-                char 't'
                 spaces
                 path <- parseString
                 return $ StmImport path
@@ -62,17 +63,8 @@ funcArgs = parseString
 
 parseInclude :: Parser SassVal
 parseInclude = do -- Oh lawdy FIXME
-                char '@'
-                char 'i'
-                char 'n'
-                char 'c'
-                char 'l'
-                char 'u'
-                char 'd'
-                char 'e'
                 spaces
                 funcName <- many letter
-                spaces
                 char '('
                 args <- sepBy funcArgs comma
                 char ')'
@@ -92,6 +84,7 @@ directive = do
 data SassVal = Directive { key :: String, rules :: [String] }
              | Rule { selectors :: [SassVal], directives :: [SassVal] }
              | Selector String
+             | Keyword String
              | StmImport SassVal
              | StmInclude { funcName :: String, args :: [SassVal] }
              | String String
@@ -102,14 +95,14 @@ showVal (Selector str)                         =  str
 showVal (Directive {key = k, rules = r})       = k ++ ":" ++ show r
 showVal (Rule {selectors = s, directives = d}) = show s ++ "{\n " ++ show d ++ "\n}"
 showVal (StmImport path)                       = "Import => " ++ show path
+showVal (StmInclude {funcName = f, args = a})  = "Include => " ++ f ++ "(" ++ show a ++ ")"
 showVal (String str)                           = "\"" ++ str ++ "\""
 
 type Env = IORef [(String, IORef SassVal)]
 
 parseExpr :: Parser SassVal
 parseExpr = parseCSSRule
-        <|> parseImport
-        <|> parseInclude
+        <|> parseKeyword
         --
 
 parseCSSRule :: Parser SassVal
