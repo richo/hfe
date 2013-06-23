@@ -27,31 +27,22 @@ selector = do first <- letter <|> selectorMeta
               return $ Selector name
 
 directive :: Parser SassVal
+-- directive = do
+--                 name <- many (noneOf " :")
+--                 -- spaces
+--                 char ':'
+--                 -- spaces
+--                 actns <- endBy (noneOf ";") semicolon
+--                 return $ Directive name actns
+
 directive = do
-                name <- many (noneOf " :")
-                char ':'
-                actns <- endBy (many letter) semicolon
-                return $ Directive name actns
+                name <- many letter
+                return $ FakeDirective name
 
--- -- | Parse stdin and return either failure or the program.
--- loadStdin :: IO (Either String Stm)
--- loadStdin = parseString "Failed to parse stdin; " <$> getContents
-
--- sassDirective :: Parser [Char]
-
--- type AcceptsBlock = Either SassBlock
-
--- parseSassFunction :: Parser SassVal
--- parseSassFunction = do char '@'
---                        exprName <- many char
---                        char '('
---                        args <- funcParams
---                        char ')'
---                        block <-
-
-data SassVal = Directive { key :: String, rules :: [String] }
+data SassVal = Directive { key :: String, rules :: String }
              | Rule { selectors :: [SassVal], directives :: [SassVal] }
              | Selector String
+             | FakeDirective { content :: String }
              -- | Css {selectors :: [string], rules :: [Rule]}
 -- data Rule { key :: String,
 -- data SassVal = Rules [SassVal]
@@ -66,7 +57,7 @@ parseExpr = parseCSSRule
 parseCSSRule :: Parser SassVal
 parseCSSRule = do  selectors <- sepBy selector spaces
                    char '{'
-                   directives <- many directive
+                   directives <- sepBy directive semicolon
                    char '}'
                    return $ Rule selectors directives
 
