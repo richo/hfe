@@ -4,6 +4,7 @@ import Text.ParserCombinators.Parsec hiding (spaces)
 import Control.Applicative ((<$>))
 import Control.Monad
 import Data.IORef
+import System.Exit
 
 spaces :: Parser ()
 spaces = skipMany1 space
@@ -156,13 +157,19 @@ parseCSSRule = do  selectors <- sepBy selector spaces
                    char '}'
                    return $ Rule selectors directives
 
-readSassExpr :: String -> String
+readSassExpr :: String -> IO ()
 readSassExpr input = case parse parseExpr "sass" input of
-    Left err -> "No match: " ++ show err
-    Right val -> show val
+                                Left err  -> do
+                                                putStrLn $ "No match: " ++ show err
+                                                exitWith (ExitFailure 1)
+                                Right val -> do
+                                                putStrLn $ show val
+                                                exitWith ExitSuccess
+
+
 
 readAndEval :: [String] -> IO ()
-readAndEval val@[_] = putStrLn $ (readSassExpr $ val !! 0)
+readAndEval val@[_] = (readSassExpr $ val !! 0)
 readAndEval other   = usage
 
 sassMain :: [String] -> IO ()
