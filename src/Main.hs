@@ -2,6 +2,8 @@ module Main where
 import System.IO
 import System.Environment
 
+import Sass
+
 usage :: IO ()
 usage = do
     putStrLn "Usage: hfe <action> [arguments], for action:"
