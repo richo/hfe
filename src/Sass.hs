@@ -35,11 +35,18 @@ directive :: Parser SassVal
 --                 actns <- endBy (noneOf ";") semicolon
 --                 return $ Directive name actns
 
+directiveAction :: Parser String
+directiveAction = do
+                action <- many letter
+                return action
+
 directive = do
                 name <- many letter
-                return $ FakeDirective name
+                char ':'
+                actions <- sepBy directiveAction spaces
+                return $ Directive name actions
 
-data SassVal = Directive { key :: String, rules :: String }
+data SassVal = Directive { key :: String, rules :: [String] }
              | Rule { selectors :: [SassVal], directives :: [SassVal] }
              | Selector String
              | FakeDirective { content :: String }
@@ -48,7 +55,7 @@ instance Show SassVal where show = showVal
 showVal :: SassVal -> String
 showVal (FakeDirective {content = c})          = "FakeDirective: " ++ c
 showVal (Selector str)                         = "Selector: " ++ str
-showVal (Directive {key = k, rules = r})       = "Directive: " ++ k ++ " => " ++ r
+showVal (Directive {key = k, rules = r})       = "Directive: " ++ k ++ " => " ++ show r
 showVal (Rule {selectors = s, directives = d}) = "Rule: " ++ show s ++ " => " ++ show d
 
 type Env = IORef [(String, IORef SassVal)]
@@ -61,7 +68,7 @@ parseExpr = parseCSSRule
 parseCSSRule :: Parser SassVal
 parseCSSRule = do  selectors <- sepBy selector spaces
                    char '{'
-                   directives <- sepBy directive semicolon
+                   directives <- endBy directive semicolon
                    char '}'
                    return $ Rule selectors directives
 
