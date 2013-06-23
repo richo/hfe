@@ -170,7 +170,6 @@ readSassExpr input = case parse parseExpr "sass" input of
                                                 exitWith (ExitFailure 1)
                                 Right val -> do
                                                 putStrLn $ show val
-                                                exitWith ExitSuccess
 
 
 
