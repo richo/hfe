@@ -43,9 +43,13 @@ data SassVal = Directive { key :: String, rules :: String }
              | Rule { selectors :: [SassVal], directives :: [SassVal] }
              | Selector String
              | FakeDirective { content :: String }
-             -- | Css {selectors :: [string], rules :: [Rule]}
--- data Rule { key :: String,
--- data SassVal = Rules [SassVal]
+instance Show SassVal where show = showVal
+
+showVal :: SassVal -> String
+showVal (FakeDirective {content = c})          = "FakeDirective: " ++ c
+showVal (Selector str)                         = "Selector: " ++ str
+showVal (Directive {key = k, rules = r})       = "Directive: " ++ k ++ " => " ++ r
+showVal (Rule {selectors = s, directives = d}) = "Rule: " ++ show s ++ " => " ++ show d
 
 type Env = IORef [(String, IORef SassVal)]
 
@@ -64,7 +68,7 @@ parseCSSRule = do  selectors <- sepBy selector spaces
 readSassExpr :: String -> String
 readSassExpr input = case parse parseExpr "sass" input of
     Left err -> "No match: " ++ show err
-    Right val -> "Found val"
+    Right val -> "Matched: " ++ show val
 
 readAndEval :: [String] -> IO ()
 readAndEval val@[_] = putStrLn $ (readSassExpr $ val !! 0)
