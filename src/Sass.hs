@@ -37,15 +37,6 @@ parseKeyword = do
                     "import"    -> parseImport
                     "include"   -> parseInclude
 
-directive :: Parser SassVal
--- directive = do
---                 name <- many (noneOf " :")
---                 -- spaces
---                 char ':'
---                 -- spaces
---                 actns <- endBy (noneOf ";") semicolon
---                 return $ Directive name actns
-
 parseString :: Parser SassVal
 parseString = do char '"' -- Read until we find this char
                  x <- many (noneOf "\"")
