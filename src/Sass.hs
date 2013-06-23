@@ -14,6 +14,12 @@ selectorMeta = oneOf ".#"
 hyphen :: Parser Char
 hyphen = oneOf "-"
 
+colon :: Parser Char
+colon = oneOf ":"
+
+semicolon :: Parser Char
+semicolon = oneOf ";"
+
 selector :: Parser SassVal
 selector = do first <- letter <|> selectorMeta
               rest  <- many (letter <|> digit <|> hyphen)
@@ -22,11 +28,9 @@ selector = do first <- letter <|> selectorMeta
 
 directive :: Parser SassVal
 directive = do
-                name <- many letter
-                spaces
+                name <- many (noneOf " :")
                 char ':'
-                actns <- sepBy (many letter) spaces
-                char ';'
+                actns <- endBy (many letter) semicolon
                 return $ Directive name actns
 
 -- -- | Parse stdin and return either failure or the program.
