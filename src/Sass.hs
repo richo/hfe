@@ -55,7 +55,7 @@ parseVariable = do
 parseValue :: Parser SassVal
 -- TODO this should parse arrays, strings and literals.
 parseValue = do
-             value <- try parseString <|> parseArray
+             value <- try parseString <|> parseArray <|> parseScalar
              char ';'
              return value
 
@@ -70,6 +70,19 @@ parseArray = do char '('
                 x <- sepBy identifier comma
                 char ')'
                 return $ Array (map String x)
+
+parseNumber :: Parser Integer
+parseNumber = do digits <- many1 digit
+                 return $ read digits
+
+parseScalar :: Parser SassVal
+parseScalar = do magnitude <- parseNumber
+                 scale     <- many letter
+                 -- return $ Scalar magnitude "identity"
+                 return $ case scale of
+                     ""   -> Scalar magnitude "identity"
+                     "em" -> Scalar magnitude "em"
+                     "px" -> Scalar magnitude "px"
 
 parseImport :: Parser SassVal
 parseImport = do -- Oh lawdy FIXME
@@ -112,6 +125,7 @@ data SassVal = Directive { key :: String, rules :: [String] }
              | StmInclude { funcName :: String, args :: [SassVal] }
              | String String
              | Array [SassVal]
+             | Scalar { magnitude :: Integer, unit :: String } -- Enum field?
              | Variable { name :: String, value :: SassVal }
 instance Show SassVal where show = showVal
 
@@ -123,6 +137,7 @@ showVal (StmImport path)                       = "Import => " ++ show path
 showVal (StmInclude {funcName = f, args = a})  = "Include => " ++ f ++ "(" ++ show a ++ ")"
 showVal (String str)                           = "\"" ++ str ++ "\""
 showVal (Array arr)                           = "(" ++ show arr ++ ")"
+showVal (Scalar {magnitude=m, unit=u})         = show m ++ u
 showVal (Variable {name=n, value=v})           = "$" ++ n ++ " => " ++ show v
 
 
