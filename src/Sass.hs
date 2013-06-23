@@ -69,3 +69,6 @@ parseCSSRule = do  selectors <- sepBy selector spaces
                    directives <- many directive
                    char '}'
                    return $ Rule selectors directives
+
+sassMain :: [String] -> IO ()
+sassMain args = putStrLn $ args !! 0
