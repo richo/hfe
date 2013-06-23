@@ -9,6 +9,9 @@ import System.Exit
 spaces :: Parser ()
 spaces = skipMany1 space
 
+ignoreSpaces :: Parser ()
+ignoreSpaces = skipMany space
+
 selectorMeta :: Parser Char
 selectorMeta = oneOf ".#"
 
@@ -49,7 +52,7 @@ parseVariable = do
                 char '$'
                 name <- identifier
                 char ':'
-                spaces
+                ignoreSpaces
                 value <- parseValue
                 return $ Variable name value
 
@@ -116,6 +119,7 @@ directiveAction = do
 directive = do
                 name <- identifier
                 char ':'
+                ignoreSpaces
                 actions <- sepBy directiveAction spaces
                 return $ Directive name actions
 
