@@ -37,6 +37,22 @@ parseKeyword = do
                     "import"    -> parseImport
                     "include"   -> parseInclude
 
+parseVariable :: Parser SassVal
+parseVariable = do
+                char '$'
+                name <- many letter
+                char ':'
+                spaces
+                value <- parseValue
+                return $ Variable name value
+
+parseValue :: Parser SassVal
+-- TODO this should parse arrays, strings and literals.
+parseValue = do
+             value <- many letter
+             char ';'
+             return $ String value
+
 parseString :: Parser SassVal
 parseString = do char '"' -- Read until we find this char
                  x <- many (noneOf "\"")
@@ -79,6 +95,7 @@ data SassVal = Directive { key :: String, rules :: [String] }
              | StmImport SassVal
              | StmInclude { funcName :: String, args :: [SassVal] }
              | String String
+             | Variable { name :: String, value :: SassVal }
 instance Show SassVal where show = showVal
 
 showVal :: SassVal -> String
@@ -88,12 +105,15 @@ showVal (Rule {selectors = s, directives = d}) = show s ++ "{\n " ++ show d ++ "
 showVal (StmImport path)                       = "Import => " ++ show path
 showVal (StmInclude {funcName = f, args = a})  = "Include => " ++ f ++ "(" ++ show a ++ ")"
 showVal (String str)                           = "\"" ++ str ++ "\""
+showVal (Variable {name=n, value=v})           = "$" ++ n ++ " => " ++ show v
+
 
 type Env = IORef [(String, IORef SassVal)]
 
 parseExpr :: Parser SassVal
 parseExpr = parseCSSRule
         <|> parseKeyword
+        <|> parseVariable
         --
 
 parseCSSRule :: Parser SassVal
