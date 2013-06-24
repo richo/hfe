@@ -6,11 +6,14 @@ import Control.Monad
 import Data.IORef
 import System.Exit
 
+whitespace :: Parser Char
+whitespace = oneOf " \n\t"
+
 spaces :: Parser ()
-spaces = skipMany1 space
+spaces = skipMany1 whitespace
 
 ignoreSpaces :: Parser ()
-ignoreSpaces = skipMany space
+ignoreSpaces = skipMany whitespace
 
 selectorMeta :: Parser Char
 selectorMeta = oneOf ".#"
