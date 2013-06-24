@@ -187,6 +187,11 @@ displayExpr expr = putStrLn $ show expr
 readSassExpr :: String -> Either ParseError [SassVal]
 readSassExpr input = parse parseStatements "sass" input
 
+loadAndEval :: String -> IO ()
+loadAndEval file = do
+                    content <- readFile file
+                    -- Haaaack
+                    readAndEval [content]
 
 
 readAndEval :: [String] -> IO ()
@@ -200,6 +205,7 @@ readAndEval val = case readSassExpr $ foldl (++) "" val of
 sassMain :: [String] -> IO ()
 sassMain args = case args !! 0 of
     "eval" -> readAndEval (drop 1 args)
+    "load" -> loadAndEval (args !! 1)
     other  -> usage
 
 usage :: IO ()
