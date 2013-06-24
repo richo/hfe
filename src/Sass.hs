@@ -179,8 +179,8 @@ readSassExpr input = case parse parseStatements "sass" input of
 
 
 readAndEval :: [String] -> IO ()
-readAndEval val@[_] = (readSassExpr $ val !! 0)
-readAndEval other   = usage
+readAndEval val@[] = usage
+readAndEval val = readSassExpr $ foldl (++) "" val
 
 sassMain :: [String] -> IO ()
 sassMain args = case args !! 0 of
