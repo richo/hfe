@@ -161,7 +161,12 @@ showVal (Variable {name=n, value=v})           = "$" ++ n ++ " => " ++ show v
 type Env = IORef [(String, IORef SassVal)]
 
 parseExpr :: Parser SassVal
-parseExpr = parseCSSRule
+parseExpr = do ignoreSpaces
+               val <- parseRawExpr
+               ignoreSpaces
+               return val
+parseRawExpr :: Parser SassVal
+parseRawExpr = try parseCSSRule
         <|> parseKeyword
         <|> parseVariable
         --
