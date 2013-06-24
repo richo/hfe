@@ -60,7 +60,6 @@ parseValue :: Parser SassVal
 -- TODO this should parse arrays, strings and literals.
 parseValue = do
              value <- try parseString <|> parseArray <|> parseScalar
-             char ';'
              return value
 
 parseString :: Parser SassVal
