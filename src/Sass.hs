@@ -176,19 +176,18 @@ parseStatements = endBy parseExpr semicolon
 displayExpr :: SassVal -> IO ()
 displayExpr expr = putStrLn $ show expr
 
-readSassExpr :: String -> IO ()
-readSassExpr input = case parse parseStatements "sass" input of
-                                Left err  -> do
-                                                putStrLn $ "No match: " ++ show err
-                                                exitWith (ExitFailure 1)
-                                Right val -> do
-                                                sequence_ $ map displayExpr val
+readSassExpr :: String -> Either ParseError [SassVal]
+readSassExpr input = parse parseStatements "sass" input
 
 
 
 readAndEval :: [String] -> IO ()
 readAndEval val@[] = usage
-readAndEval val = readSassExpr $ foldl (++) "" val
+readAndEval val = case readSassExpr $ foldl (++) "" val of
+                        Left err  -> do
+                            putStrLn $ show err
+                            exitWith (ExitFailure 1)
+                        Right val -> sequence_ $ map displayExpr val
 
 sassMain :: [String] -> IO ()
 sassMain args = case args !! 0 of
