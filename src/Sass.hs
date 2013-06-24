@@ -39,6 +39,13 @@ selector = do first <- letter <|> selectorMeta
               let name = first : rest
               return $ Selector name
 
+parseComment :: Parser SassVal
+parseComment = do
+                string "/*"
+                comment <- manyTill anyChar (string "*/")
+                string "*/"
+                return $ Comment comment
+
 parseKeyword :: Parser SassVal
 parseKeyword = do
                 char '@'
@@ -133,6 +140,7 @@ data SassVal = Directive { key :: String, rules :: [SassVal] }
              | Array [SassVal]
              | Scalar { magnitude :: Integer, unit :: String } -- Enum field?
              | Variable { name :: String, value :: SassVal }
+             | Comment String
 instance Show SassVal where show = showVal
 
 showVal :: SassVal -> String
