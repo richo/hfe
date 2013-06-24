@@ -163,13 +163,19 @@ parseCSSRule = do  selectors <- sepBy selector spaces
                    char '}'
                    return $ Rule selectors directives
 
+parseStatements :: Parser [SassVal]
+parseStatements = endBy parseExpr semicolon
+
+displayExpr :: SassVal -> IO ()
+displayExpr expr = putStrLn $ show expr
+
 readSassExpr :: String -> IO ()
-readSassExpr input = case parse parseExpr "sass" input of
+readSassExpr input = case parse parseStatements "sass" input of
                                 Left err  -> do
                                                 putStrLn $ "No match: " ++ show err
                                                 exitWith (ExitFailure 1)
                                 Right val -> do
-                                                putStrLn $ show val
+                                                sequence_ $ map displayExpr val
 
 
 
