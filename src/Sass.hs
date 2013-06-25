@@ -209,4 +209,6 @@ sassMain args = case args !! 0 of
     other  -> usage
 
 usage :: IO ()
-usage = putStrLn "           sass eval 'expression'"
+usage = do
+        putStrLn "           sass eval 'expression'"
+        putStrLn "           sass load 'filename'"
