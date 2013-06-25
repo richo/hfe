@@ -170,6 +170,12 @@ type Env = IORef [(String, IORef SassVal)]
 parseExpr :: Parser SassVal
 parseExpr = ignoreSpaceTill $ ignoreSpaceAfter parseRawExpr
 
+parseDelimitedExpr :: Parser SassVal
+parseDelimitedExpr = do
+                     c <- parseExpr
+                     semicolon
+                     return c
+
 parseRawExpr :: Parser SassVal
 parseRawExpr = try parseCSSRule
         <|> parseKeyword
@@ -195,7 +201,7 @@ ignoreSpaceAfter parser = do
 parseCSSRule :: Parser SassVal
 parseCSSRule = do  sels <- sepBy selectorGroup commaIgnoringWhitespace
                    ignoreSpaceTill $ ignoreSpaceAfter $ char '{'
-                   content <- manyTill parseExpr (char '}')
+                   content <- manyTill parseDelimitedExpr (char '}')
                    return $ Rule sels content
 
 parseStatements :: Parser [SassVal]
