@@ -42,6 +42,9 @@ selector = do first <- letter <|> selectorMeta
               let name = first : rest
               return $ Selector name
 
+selectorGroup :: Parser [SassVal]
+selectorGroup = sepBy selector spaces
+
 parseComment :: Parser SassVal
 parseComment = do
                 string "/*"
@@ -134,7 +137,7 @@ directive = do
 
 
 data SassVal = Directive { key :: String, rules :: [SassVal] }
-             | Rule { selectors :: [SassVal], directives :: [SassVal] }
+             | Rule { selectors :: [[SassVal]], directives :: [SassVal] }
              | Selector String
              | Keyword String
              | StmImport SassVal
@@ -172,11 +175,11 @@ parseRawExpr = try parseCSSRule
         --
 
 parseCSSRule :: Parser SassVal
-parseCSSRule = do  selectors <- sepBy selector spaces
+parseCSSRule = do  sels <- sepBy selectorGroup comma
                    char '{'
                    directives <- endBy directive semicolon
                    char '}'
-                   return $ Rule selectors directives
+                   return $ Rule sels directives
 
 parseStatements :: Parser [SassVal]
 parseStatements = endBy parseExpr semicolon
