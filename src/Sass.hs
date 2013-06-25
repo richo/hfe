@@ -200,7 +200,7 @@ parseCSSRule :: Parser SassVal
 parseCSSRule = do  sels <- sepBy selectorGroup commaIgnoringWhitespace
                    char '{'
                    ignoreSpaces
-                   content <- manyTill parseDirective (char '}')
+                   content <- manyTill parseExpr (char '}')
                    return $ Rule sels content
 
 parseStatements :: Parser [SassVal]
