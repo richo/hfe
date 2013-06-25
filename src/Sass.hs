@@ -121,7 +121,7 @@ parseImport = do -- Oh lawdy FIXME
                 return $ StmImport path
 
 funcArgs :: Parser SassVal
-funcArgs = parseString
+funcArgs = parseExpr
 
 parseInclude :: Parser SassVal
 parseInclude = do -- Oh lawdy FIXME
@@ -187,6 +187,7 @@ parseRawExpr :: Parser SassVal
 parseRawExpr = try parseCSSRule
         <|> parseKeyword
         <|> parseVariable
+        <|> parseString
         <|> parseDirective
 
 parseDirective :: Parser SassVal
