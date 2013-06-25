@@ -196,10 +196,18 @@ parseDirective = do
                  semicolonIgnoringWhitespace
                  return content
 
+ignoreSpaceTill :: Parser a -> Parser a
+ignoreSpaceTill parser = ignoreSpaces >> parser
+
+ignoreSpaceAfter :: Parser a -> Parser a
+ignoreSpaceAfter parser = do
+                          c <- parser
+                          ignoreSpaces
+                          return c
+
 parseCSSRule :: Parser SassVal
 parseCSSRule = do  sels <- sepBy selectorGroup commaIgnoringWhitespace
-                   char '{'
-                   ignoreSpaces
+                   ignoreSpaceTill $ ignoreSpaceAfter $ char '{'
                    content <- manyTill parseExpr (char '}')
                    return $ Rule sels content
 
