@@ -28,21 +28,13 @@ semicolon :: Parser Char
 semicolon = oneOf ";"
 
 semicolonIgnoringWhitespace :: Parser Char
-semicolonIgnoringWhitespace = do
-                                ignoreSpaces
-                                c <- semicolon
-                                ignoreSpaces
-                                return c
+semicolonIgnoringWhitespace = ignoreSpaceTill $ ignoreSpaceAfter semicolon
 
 comma :: Parser Char
 comma = oneOf ","
 
 commaIgnoringWhitespace :: Parser Char
-commaIgnoringWhitespace = do
-                            ignoreSpaces
-                            c <- comma
-                            ignoreSpaces
-                            return c
+commaIgnoringWhitespace = ignoreSpaceTill $ ignoreSpaceAfter comma
 
 identifier :: Parser String
 identifier = do
@@ -78,8 +70,7 @@ parseVariable :: Parser SassVal
 parseVariable = do
                 char '$'
                 name <- identifier
-                char ':'
-                ignoreSpaces
+                ignoreSpaceTill $ ignoreSpaceAfter $ char ':'
                 value <- parseValue
                 return $ Variable name value
 
@@ -144,8 +135,7 @@ directiveAction = do
 
 directive = do
                 name <- identifier
-                char ':'
-                ignoreSpaces
+                ignoreSpaceTill $ ignoreSpaceAfter $ char ':'
                 actions <- sepBy directiveAction spaces
                 return $ Directive name actions
 
@@ -178,10 +168,7 @@ showVal (Variable {name=n, value=v})           = "$" ++ n ++ " => " ++ show v
 type Env = IORef [(String, IORef SassVal)]
 
 parseExpr :: Parser SassVal
-parseExpr = do ignoreSpaces
-               val <- parseRawExpr
-               ignoreSpaces
-               return val
+parseExpr = ignoreSpaceTill $ ignoreSpaceAfter parseRawExpr
 
 parseRawExpr :: Parser SassVal
 parseRawExpr = try parseCSSRule
