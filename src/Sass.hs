@@ -27,6 +27,13 @@ colon = oneOf ":"
 semicolon :: Parser Char
 semicolon = oneOf ";"
 
+semicolonIgnoringWhitespace :: Parser Char
+semicolonIgnoringWhitespace = do
+                                ignoreSpaces
+                                c <- semicolon
+                                ignoreSpaces
+                                return c
+
 comma :: Parser Char
 comma = oneOf ","
 
@@ -184,12 +191,12 @@ parseRawExpr = try parseCSSRule
 parseCSSRule :: Parser SassVal
 parseCSSRule = do  sels <- sepBy selectorGroup commaIgnoringWhitespace
                    char '{'
-                   directives <- endBy directive semicolon
+                   directives <- endBy directive semicolonIgnoringWhitespace
                    char '}'
                    return $ Rule sels directives
 
 parseStatements :: Parser [SassVal]
-parseStatements = endBy parseExpr semicolon
+parseStatements = endBy parseExpr semicolonIgnoringWhitespace
 
 displayExpr :: SassVal -> IO ()
 displayExpr expr = putStrLn $ show expr
