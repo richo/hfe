@@ -191,6 +191,7 @@ parseRawExpr = try parseCSSRule
 parseCSSRule :: Parser SassVal
 parseCSSRule = do  sels <- sepBy selectorGroup commaIgnoringWhitespace
                    char '{'
+                   ignoreSpaces
                    directives <- endBy directive semicolonIgnoringWhitespace
                    char '}'
                    return $ Rule sels directives
