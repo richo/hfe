@@ -151,7 +151,7 @@ directive = do
 
 
 data SassVal = Directive { key :: String, rules :: [SassVal] }
-             | Rule { selectors :: [[SassVal]], directives :: [SassVal] }
+             | Rule { selectors :: [[SassVal]], content :: [SassVal] }
              | Selector String
              | Keyword String
              | StmImport SassVal
@@ -166,7 +166,7 @@ instance Show SassVal where show = showVal
 showVal :: SassVal -> String
 showVal (Selector str)                         =  str
 showVal (Directive {key = k, rules = r})       = k ++ ":" ++ show r
-showVal (Rule {selectors = s, directives = d}) = show s ++ "{\n " ++ show d ++ "\n}"
+showVal (Rule {selectors = s, content = d}) = show s ++ "{\n " ++ show d ++ "\n}"
 showVal (StmImport path)                       = "Import => " ++ show path
 showVal (StmInclude {funcName = f, args = a})  = "Include => " ++ f ++ "(" ++ show a ++ ")"
 showVal (String str)                           = "\"" ++ str ++ "\""
@@ -182,19 +182,24 @@ parseExpr = do ignoreSpaces
                val <- parseRawExpr
                ignoreSpaces
                return val
+
 parseRawExpr :: Parser SassVal
 parseRawExpr = try parseCSSRule
         <|> parseKeyword
         <|> parseVariable
-        --
+        <|> parseDirective
+
+parseDirective :: Parser SassVal
+parseDirective = do
+                 content <- directive
+                 semicolonIgnoringWhitespace
+                 return content
 
 parseCSSRule :: Parser SassVal
 parseCSSRule = do  sels <- sepBy selectorGroup commaIgnoringWhitespace
                    char '{'
-                   ignoreSpaces
-                   directives <- endBy directive semicolonIgnoringWhitespace
-                   char '}'
-                   return $ Rule sels directives
+                   content <- manyTill parseDirective (char '}')
+                   return $ Rule sels content
 
 parseStatements :: Parser [SassVal]
 parseStatements = endBy parseExpr semicolonIgnoringWhitespace
