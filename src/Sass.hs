@@ -30,6 +30,13 @@ semicolon = oneOf ";"
 comma :: Parser Char
 comma = oneOf ","
 
+commaIgnoringWhitespace :: Parser Char
+commaIgnoringWhitespace = do
+                            ignoreSpaces
+                            c <- comma
+                            ignoreSpaces
+                            return c
+
 identifier :: Parser String
 identifier = do
              first <- letter
@@ -175,7 +182,7 @@ parseRawExpr = try parseCSSRule
         --
 
 parseCSSRule :: Parser SassVal
-parseCSSRule = do  sels <- sepBy selectorGroup comma
+parseCSSRule = do  sels <- sepBy selectorGroup commaIgnoringWhitespace
                    char '{'
                    directives <- endBy directive semicolon
                    char '}'
