@@ -62,9 +62,11 @@ parseKeyword :: Parser SassVal
 parseKeyword = do
                 char '@'
                 keyword <- identifier
-                case keyword of
+                val <- case keyword of
                     "import"    -> parseImport
                     "include"   -> parseInclude
+                char ';'
+                return val
 
 parseVariable :: Parser SassVal
 parseVariable = do
@@ -135,8 +137,11 @@ directiveAction = do
 
 directive = do
                 name <- identifier
-                ignoreSpaceTill $ ignoreSpaceAfter $ char ':'
+                -- ignoreSpaceTill $ ignoreSpaceAfter $ char ':'
+                char ':'
+                ignoreSpaces
                 actions <- sepBy directiveAction spaces
+                char ';'
                 return $ Directive name actions
 
 
@@ -170,12 +175,6 @@ type Env = IORef [(String, IORef SassVal)]
 parseExpr :: Parser SassVal
 parseExpr = ignoreSpaceTill $ ignoreSpaceAfter parseRawExpr
 
-parseDelimitedExpr :: Parser SassVal
-parseDelimitedExpr = do
-                     c <- parseExpr
-                     semicolon
-                     return c
-
 parseRawExpr :: Parser SassVal
 parseRawExpr = try parseCSSRule
         <|> parseKeyword
@@ -186,7 +185,6 @@ parseRawExpr = try parseCSSRule
 parseDirective :: Parser SassVal
 parseDirective = do
                  content <- directive
-                 semicolonIgnoringWhitespace
                  return content
 
 ignoreSpaceTill :: Parser a -> Parser a
@@ -201,11 +199,11 @@ ignoreSpaceAfter parser = do
 parseCSSRule :: Parser SassVal
 parseCSSRule = do  sels <- sepBy selectorGroup commaIgnoringWhitespace
                    ignoreSpaceTill $ ignoreSpaceAfter $ char '{'
-                   content <- manyTill parseDelimitedExpr $ char '}'
+                   content <- manyTill parseExpr $ char '}'
                    return $ Rule sels content
 
 parseStatements :: Parser [SassVal]
-parseStatements = endBy parseExpr semicolonIgnoringWhitespace
+parseStatements = manyTill parseExpr eof
 
 displayExpr :: SassVal -> IO ()
 displayExpr expr = putStrLn $ show expr
