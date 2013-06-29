@@ -19,19 +19,19 @@ selectorMeta :: Parser Char
 selectorMeta = oneOf ".#"
 
 hyphen :: Parser Char
-hyphen = oneOf "-"
+hyphen = char '-'
 
 colon :: Parser Char
-colon = oneOf ":"
+colon = char ':'
 
 semicolon :: Parser Char
-semicolon = oneOf ";"
+semicolon = char ';'
 
 semicolonIgnoringWhitespace :: Parser Char
 semicolonIgnoringWhitespace = ignoreSpaceTill $ ignoreSpaceAfter semicolon
 
 comma :: Parser Char
-comma = oneOf ","
+comma = char ','
 
 commaIgnoringWhitespace :: Parser Char
 commaIgnoringWhitespace = ignoreSpaceTill $ ignoreSpaceAfter comma
