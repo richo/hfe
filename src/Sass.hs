@@ -201,7 +201,7 @@ ignoreSpaceAfter parser = do
 parseCSSRule :: Parser SassVal
 parseCSSRule = do  sels <- sepBy selectorGroup commaIgnoringWhitespace
                    ignoreSpaceTill $ ignoreSpaceAfter $ char '{'
-                   content <- manyTill parseDelimitedExpr (char '}')
+                   content <- manyTill parseDelimitedExpr $ char '}'
                    return $ Rule sels content
 
 parseStatements :: Parser [SassVal]
