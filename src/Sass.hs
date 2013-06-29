@@ -74,6 +74,7 @@ parseVariable = do
                 name <- identifier
                 ignoreSpaceTill $ ignoreSpaceAfter $ char ':'
                 value <- parseValue
+                semicolonIgnoringWhitespace
                 return $ Variable name value
 
 parseValue :: Parser SassVal
