@@ -65,7 +65,7 @@ parseKeyword = do
                 val <- case keyword of
                     "import"    -> parseImport
                     "include"   -> parseInclude
-                char ';'
+                semicolonIgnoringWhitespace
                 return val
 
 parseVariable :: Parser SassVal
