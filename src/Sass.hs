@@ -163,8 +163,8 @@ showVal :: SassVal -> String
 showVal (Selector str)                         =  str
 showVal (Directive {key = k, rules = r})       = k ++ ":" ++ show r
 showVal (Rule {selectors = s, content = d}) = show s ++ "{\n " ++ show d ++ "\n}"
-showVal (StmImport path)                       = "Import => " ++ show path
-showVal (StmInclude {funcName = f, args = a})  = "Include => " ++ f ++ "(" ++ show a ++ ")"
+showVal (StmImport path)                       = "<@import " ++ show path ++ ">"
+showVal (StmInclude {funcName = f, args = a})  = "<@include " ++ f ++ "(" ++ show a ++ ")>"
 showVal (String str)                           = "\"" ++ str ++ "\""
 showVal (Array arr)                            = "(" ++ show arr ++ ")"
 showVal (Scalar {magnitude=m, unit=u})         = show m ++ u
