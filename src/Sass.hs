@@ -45,8 +45,7 @@ identifier = do
 selector :: Parser SassVal
 selector = do first <- letter <|> selectorMeta
               rest  <- many (letter <|> digit <|> hyphen)
-              let name = first : rest
-              return $ Selector name
+              return $ Selector (first:rest)
 
 selectorGroup :: Parser [SassVal]
 selectorGroup = sepBy selector spaces
