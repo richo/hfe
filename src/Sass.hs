@@ -168,7 +168,7 @@ showVal (StmInclude {funcName = f, args = a})  = "<@include " ++ f ++ "(" ++ sho
 showVal (String str)                           = "\"" ++ str ++ "\""
 showVal (Array arr)                            = "(" ++ show arr ++ ")"
 showVal (Scalar {magnitude=m, unit=u})         = show m ++ u
-showVal (Variable {name=n, value=v})           = "$" ++ n ++ " => " ++ show v
+showVal (Variable {name=n, value=v})           = "<$" ++ n ++ " : " ++ show v ++ ">"
 
 
 type Env = IORef [(String, IORef SassVal)]
