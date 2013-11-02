@@ -37,10 +37,9 @@ commaIgnoringWhitespace :: Parser Char
 commaIgnoringWhitespace = ignoreSpaceTill $ ignoreSpaceAfter comma
 
 identifier :: Parser String
-identifier = do
-             first <- letter
-             rest  <- many (letter <|> digit <|> hyphen)
-             return $ first:rest
+identifier = do first <- letter
+                rest  <- many (letter <|> digit <|> hyphen)
+                return $ first:rest
 
 selector :: Parser SassVal
 selector = do first <- letter <|> selectorMeta
@@ -51,30 +50,27 @@ selectorGroup :: Parser [SassVal]
 selectorGroup = sepBy selector spaces
 
 parseComment :: Parser SassVal
-parseComment = do
-                string "/*"
-                comment <- manyTill anyChar (string "*/")
-                string "*/"
-                return $ Comment comment
+parseComment = do string "/*"
+                  comment <- manyTill anyChar (string "*/")
+                  string "*/"
+                  return $ Comment comment
 
 parseKeyword :: Parser SassVal
-parseKeyword = do
-                char '@'
-                keyword <- identifier
-                val <- case keyword of
-                    "import"    -> parseImport
-                    "include"   -> parseInclude
-                semicolonIgnoringWhitespace
-                return val
+parseKeyword = do char '@'
+                  keyword <- identifier
+                  val <- case keyword of
+                      "import"    -> parseImport
+                      "include"   -> parseInclude
+                  semicolonIgnoringWhitespace
+                  return val
 
 parseVariable :: Parser SassVal
-parseVariable = do
-                char '$'
-                name <- identifier
-                ignoreSpaceTill $ ignoreSpaceAfter $ char ':'
-                value <- parseValue
-                semicolonIgnoringWhitespace
-                return $ Variable name value
+parseVariable = do char '$'
+                   name <- identifier
+                   ignoreSpaceTill $ ignoreSpaceAfter $ char ':'
+                   value <- parseValue
+                   semicolonIgnoringWhitespace
+                   return $ Variable name value
 
 parseValue :: Parser SassVal
 -- TODO this should parse arrays, strings and literals.
@@ -118,31 +114,27 @@ funcArgs = parseExpr
 
 parseInclude :: Parser SassVal
 parseInclude = do -- Oh lawdy FIXME
-                spaces
-                funcName <- identifier
-                char '('
-                args <- sepBy funcArgs comma
-                char ')'
-                return $ StmInclude funcName args
+               spaces
+               funcName <- identifier
+               char '('
+               args <- sepBy funcArgs comma
+               char ')'
+               return $ StmInclude funcName args
 
 parseIdentifier :: Parser SassVal
-parseIdentifier = do
-                    id <- identifier
-                    return $ String id
+parseIdentifier = do id <- identifier
+                     return $ String id
 
 directiveAction :: Parser SassVal
-directiveAction = do
-                action <- try parseScalar <|> parseIdentifier
-                return action
+directiveAction = do action <- try parseScalar <|> parseIdentifier
+                     return action
 
-directive = do
-                name <- identifier
-                -- ignoreSpaceTill $ ignoreSpaceAfter $ char ':'
-                char ':'
-                ignoreSpaces
-                actions <- sepBy directiveAction spaces
-                char ';'
-                return $ Directive name actions
+directive = do name <- identifier
+               char ':'
+               ignoreSpaces
+               actions <- sepBy directiveAction spaces
+               char ';'
+               return $ Directive name actions
 
 
 data SassVal = Directive { key :: String, rules :: [SassVal] }
@@ -177,30 +169,28 @@ parseExpr = ignoreSpaceTill $ ignoreSpaceAfter parseRawExpr
 
 parseRawExpr :: Parser SassVal
 parseRawExpr = try parseCSSRule
-        <|> parseKeyword
-        <|> parseVariable
-        <|> parseString
-        <|> parseDirective
+               <|> parseKeyword
+               <|> parseVariable
+               <|> parseString
+               <|> parseDirective
 
 parseDirective :: Parser SassVal
-parseDirective = do
-                 content <- directive
-                 return content
+parseDirective = do content <- directive
+                    return content
 
 ignoreSpaceTill :: Parser a -> Parser a
 ignoreSpaceTill parser = ignoreSpaces >> parser
 
 ignoreSpaceAfter :: Parser a -> Parser a
-ignoreSpaceAfter parser = do
-                          c <- parser
-                          ignoreSpaces
-                          return c
+ignoreSpaceAfter parser = do c <- parser
+                             ignoreSpaces
+                             return c
 
 parseCSSRule :: Parser SassVal
-parseCSSRule = do  sels <- sepBy selectorGroup commaIgnoringWhitespace
-                   ignoreSpaceTill $ ignoreSpaceAfter $ char '{'
-                   content <- manyTill parseExpr $ char '}'
-                   return $ Rule sels content
+parseCSSRule = do sels <- sepBy selectorGroup commaIgnoringWhitespace
+                  ignoreSpaceTill $ ignoreSpaceAfter $ char '{'
+                  content <- manyTill parseExpr $ char '}'
+                  return $ Rule sels content
 
 parseStatements :: Parser [SassVal]
 parseStatements = manyTill parseExpr eof
@@ -221,10 +211,10 @@ loadAndEval file = do
 readAndEval :: [String] -> IO ()
 readAndEval val@[] = usage
 readAndEval val = case readSassExpr $ foldl (++) "" val of
-                        Left err  -> do
-                            putStrLn $ show err
-                            exitWith (ExitFailure 1)
-                        Right val -> sequence_ $ map displayExpr val
+                       Left err  -> do
+                           putStrLn $ show err
+                           exitWith (ExitFailure 1)
+                       Right val -> sequence_ $ map displayExpr val
 
 sassMain :: [String] -> IO ()
 sassMain args = case args !! 0 of
